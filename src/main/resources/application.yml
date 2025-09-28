@@ -1,0 +1,82 @@
+server:
+  port: 8090
+spring:
+  profiles:
+    active:
+      - dev
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - dev
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ticketdb
+    username: postgres
+    password: haki$1120
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-test-query: SELECT 1
+      validation-timeout: 5000
+      max-lifetime: 600000
+      connection-timeout: 2000
+      initialization-fail-timeout: -1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  main:
+    banner-mode: off
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+        - health
+        - info
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+server:
+  port: 8081
+jwt:
+  secret: 4jsadhajkhd734y98qwdkln172ye8eu102askdjkash7
+  expiration: 3600000
+  refresh-expiration: 604800000
+logging:
+  level:
+    com.kimhok.tickets: ERROR
+    org.springframework.security: ERROR
+    io.jsonwebtoken: ERROR
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - test
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ticketdb_test
+    username: postgres
+    password: haki$1120
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 8082
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - prod
+  datasource:
+    url: jdbc:postgresql://localhost:5433/ticketdb_prod
+    username: postgres
+    password: haki$1120
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 8083
