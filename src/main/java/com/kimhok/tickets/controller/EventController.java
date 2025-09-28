@@ -1,6 +1,7 @@
 package com.kimhok.tickets.controller;
 
 import com.kimhok.tickets.common.utils.ApiResponse;
+import com.kimhok.tickets.common.utils.PagedResponse;
 import com.kimhok.tickets.dto.EventDto;
 import com.kimhok.tickets.dto.events.CreateEventRequest;
 import com.kimhok.tickets.service.EventService;
@@ -12,8 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -33,10 +32,16 @@ public class EventController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<EventDto>>> listEvents() {
-        log.info("List Event Controller");
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "List All Event", eventService.getAllEvent()));
+    public ResponseEntity<PagedResponse<EventDto>> listEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        return ResponseEntity.ok(eventService.getAllEvent(page, size, sortBy, direction));
     }
+
+
     @GetMapping("/{eventId}")
     public ResponseEntity<ApiResponse<EventDto>> getEventById(@PathVariable String eventId){
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Get Event By Id", eventService.getEventById(eventId)));

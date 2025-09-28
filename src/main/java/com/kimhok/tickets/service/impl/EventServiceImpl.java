@@ -1,6 +1,7 @@
 package com.kimhok.tickets.service.impl;
 
 import com.kimhok.tickets.common.utils.AuthUtil;
+import com.kimhok.tickets.common.utils.PagedResponse;
 import com.kimhok.tickets.dto.EventDto;
 import com.kimhok.tickets.dto.events.CreateEventRequest;
 import com.kimhok.tickets.entity.Event;
@@ -13,12 +14,15 @@ import com.kimhok.tickets.service.EventService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,12 +56,24 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public List<EventDto> getAllEvent() {
-        log.info("Event Service List All Events");
-        List<Event> events = eventRepository.findAll();
-        return eventMapper.toDtoList(events);
-    }
+    public PagedResponse<EventDto> getAllEvent(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
 
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Event> eventsPage = eventRepository.findAll(pageable);
+
+        List<EventDto> items = eventsPage.map(eventMapper::toDto).getContent();
+
+        return new PagedResponse<>(
+                items,
+                eventsPage.getNumber(),
+                eventsPage.getTotalPages(),
+                eventsPage.getTotalElements(),
+                eventsPage.getSize()
+        );
+    }
 
     @Override
     public EventDto getEventById(String eventId) {

@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,23 +28,24 @@ private final UserService userService;
 
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getCurrentUser() {
+    public ResponseEntity<ApiResponse<?>> getCurrentUser() {
         log.info("User Controller Get User Profile..." );
         User user = AuthUtil.getCurrentUser();
         if (user == null) {
             throw new AuthenticationException("User is not authenticated"){};
         }
-        return ResponseEntity.ok(Map.of(
-                "status",HttpStatus.OK.value(),
-                    "message","Get User Profile Success",
-                    "username", user.getUsername(),
-                    "email", user.getEmail(),
-                    "role", user.getRoleName() != null ? user.getRoleName() : "No role assigned"
-            ));
+        Map<String,Object> profile = new HashMap<>();
+        profile.put("username",user.getUsername());
+        profile.put("email",user.getEmail());
+        profile.put("phoneNumber",user.getPhoneNumber());
+        profile.put("role",user.getRoleName());
+        profile.put("status",user.getStatus());
+        profile.put("createdAt",user.getCreatedAt());
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(),"Get User Profile Success",profile));
     }
 
     @GetMapping("/list-all")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<UserDTO>>> listAllUsers(){
         log.info("User Controller List All User...");
         List<UserDTO> allUsers = userService.getAllUsers();
