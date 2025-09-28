@@ -1,2 +1,28 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# Text files — normalize to LF
+*.java        text eol=lf
+*.xml         text eol=lf
+*.properties  text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.md          text eol=lf
+*.gitignore   text eol=lf
+
+# Shell scripts — LF
+*.sh          text eol=lf
+
+# Windows scripts — CRLF
+*.cmd         text eol=crlf
+*.bat         text eol=crlf
+mvnw.cmd      text eol=crlf
+
+# Ignore binary files for line ending normalization
+*.jar         binary
+*.war         binary
+*.class       binary
+*.png         binary
+*.jpg         binary
+*.gif         binary
+*.ico         binary
+*.exe         binary
+*.dll         binary
+*.so          binary
