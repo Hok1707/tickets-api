@@ -1,8 +1,11 @@
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
 !**/src/main/**/target/
 !**/src/test/**/target/
+mvnw.cmd
+mvnw
 
 ### STS ###
 .apt_generated
@@ -33,3 +36,4 @@ build/
 .vscode/
 # macOS system files
 .DS_Store
+.mvn/wrapper
