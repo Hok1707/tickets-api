@@ -8,6 +8,6 @@ public interface AuthService {
     RegisterResponseDTO register(RegisterRequestDTO request);
     LoginResponseDTO login(LoginRequestDTO request);
     RefreshTokenResponseDTO refreshToken(String refreshToken);
-    void changePassword(String currentPassword, String newPassword, String confirmPassword);
+    void changePassword(ChangePasswordRequestDTO request);
 
 }

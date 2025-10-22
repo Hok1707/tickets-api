@@ -47,12 +47,7 @@ public class AuthController {
             @RequestBody ChangePasswordRequestDTO request
     ) {
         log.info("Auth Controller changePassword Processing...");
-        authService.changePassword(
-                request.getCurrentPassword(),
-                request.getNewPassword(),
-                request.getConfirmPassword()
-        );
-
+        authService.changePassword(request);
         return ResponseEntity.ok("Change Password Successfully");
     }
 }

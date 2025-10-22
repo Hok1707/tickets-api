@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleUpdateRequest {
-    @NotBlank(message = "User email is required")
-    private String userEmail;
 
     @NotBlank(message = "Role name is required")
     private String newRoleName;

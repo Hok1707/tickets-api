@@ -1,21 +1,50 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/ticketdb_prod
-    username: postgres
-    password: haki$1120
+    url: jdbc:postgresql://dpg-d3dto0h5pdvs73a3jfrg-a.oregon-postgres.render.com:5432/ticket_db_prod
+    username: ticket_db_prod_user
+    password: SPW16sO3XlSkpMGZ3VFDguwCOfGiv8Xm
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 2
+      idle-timeout: 30000            # 30 seconds
+      max-lifetime: 1740000          # 29 minutes (set < DB timeout)
+      connection-timeout: 20000      # 20 seconds
   jpa:
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
+        properties:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
       format_sql: false
       show_sql: false
       use_sql_comments: false
+    open-in-view: false
+  main:
+    banner-mode: off
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+  endpoint:
+    health:
+      show-details: NEVER
+jwt:
+  secret: 4jsadhajkhd734y98qwdkln172ye8eu102jslaneusk8
+  expiration: 3600000
+  refresh-expiration: 604800000
 logging:
   level:
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
-
+    com.kimhok.tickets: WARN
+    org.springframework.security: ERROR
+    io.jsonwebtoken: ERROR
 server:
   port: 8083

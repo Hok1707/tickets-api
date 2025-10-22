@@ -1,9 +1,9 @@
 package com.kimhok.tickets.controller;
 
+import com.kimhok.tickets.common.enums.UserStatus;
 import com.kimhok.tickets.common.utils.ApiResponse;
-import com.kimhok.tickets.common.utils.AuthUtil;
-import com.kimhok.tickets.dto.UserDTO;
-import com.kimhok.tickets.entity.User;
+import com.kimhok.tickets.dto.auth.StatusUpdateRequest;
+import com.kimhok.tickets.dto.auth.UserDTO;
 import com.kimhok.tickets.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,13 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -29,19 +26,9 @@ private final UserService userService;
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<?>> getCurrentUser() {
-        log.info("User Controller Get User Profile..." );
-        User user = AuthUtil.getCurrentUser();
-        if (user == null) {
-            throw new AuthenticationException("User is not authenticated"){};
-        }
-        Map<String,Object> profile = new HashMap<>();
-        profile.put("username",user.getUsername());
-        profile.put("email",user.getEmail());
-        profile.put("phoneNumber",user.getPhoneNumber());
-        profile.put("role",user.getRoleName());
-        profile.put("status",user.getStatus());
-        profile.put("createdAt",user.getCreatedAt());
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(),"Get User Profile Success",profile));
+        log.info("User Controller Get User Profile...");
+        Map<String,Object> profile = userService.getCurrentUserProfile();
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Get User Profile Success", profile));
     }
 
     @GetMapping("/list-all")
@@ -66,7 +53,6 @@ private final UserService userService;
         );
     }
 
-
     @GetMapping("/active-user")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<List<UserDTO>>> listActiveUser(){
@@ -77,5 +63,26 @@ private final UserService userService;
                 .data(userService.getActiveUser())
                 .build();
         return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> removeUser(@PathVariable String id) {
+        log.info("User Controller Remove User '{}'", id);
+        userService.removeUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/update-status/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<UserDTO>> updateUserStatus(
+            @PathVariable String userId,
+            @RequestBody StatusUpdateRequest request
+    ) {
+        UserDTO updatedUser = userService.updateStatus(userId, request.getStatus());
+        return ResponseEntity.ok(ApiResponse.success(
+                HttpStatus.OK.value(),
+                "User status updated successfully",
+                updatedUser
+        ));
     }
 }

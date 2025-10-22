@@ -1,4 +1,4 @@
-package com.kimhok.tickets.dto;
+package com.kimhok.tickets.dto.role;
 
 import lombok.*;
 

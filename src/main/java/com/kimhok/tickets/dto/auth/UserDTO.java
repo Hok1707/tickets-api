@@ -1,4 +1,4 @@
-package com.kimhok.tickets.dto;
+package com.kimhok.tickets.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,6 +16,7 @@ import java.util.UUID;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDTO {
+    private String id;
     private String username;
     private String email;
     private String phoneNumber;

@@ -8,13 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL) // 🔥 hide null fields from JSON
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
 
     @Builder.Default
@@ -28,6 +29,19 @@ public class ErrorResponse {
 
     @Builder.Default
     private String traceId = UUID.randomUUID().toString();
+    private List<FieldValidationError> fieldErrors;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class FieldValidationError {
+        private String field;
+        private String message;
+        private Object rejectedValue;
+        private String code;
+    }
 
     public static ErrorResponse of(int status, String error, String message, String path) {
         return ErrorResponse.builder()
@@ -38,13 +52,14 @@ public class ErrorResponse {
                 .build();
     }
 
-    public static ErrorResponse of(LocalDateTime timestamp, int status, String error, String message, String path) {
+    public static ErrorResponse of(LocalDateTime timestamp, int status, String error, String message, String path,List<FieldValidationError> fieldErrors) {
         return ErrorResponse.builder()
                 .timestamp(timestamp)
                 .status(status)
                 .error(error)
                 .message(message)
                 .path(path)
+                .fieldErrors(fieldErrors)
                 .build();
     }
 }

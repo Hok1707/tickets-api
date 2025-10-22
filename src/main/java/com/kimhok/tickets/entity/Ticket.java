@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -26,7 +25,6 @@ public class Ticket {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_type_id")
     private TicketType ticketType;
@@ -35,7 +33,7 @@ public class Ticket {
     @JoinColumn(name = "purchaser_id")
     private User purchaser;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "ticket",cascade = CascadeType.ALL)
     private List<TicketValidation> validations = new ArrayList<>();
 
     @OneToMany(mappedBy = "ticket",cascade = CascadeType.ALL)

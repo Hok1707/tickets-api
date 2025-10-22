@@ -1,6 +1,6 @@
 package com.kimhok.tickets.mapper;
 
-import com.kimhok.tickets.dto.*;
+import com.kimhok.tickets.dto.auth.UserDTO;
 import com.kimhok.tickets.entity.*;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;

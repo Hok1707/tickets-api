@@ -1,7 +1,7 @@
 package com.kimhok.tickets.controller;
 
 import com.kimhok.tickets.common.utils.ApiResponse;
-import com.kimhok.tickets.config.security.CustomUserDetails;
+import com.kimhok.tickets.common.utils.AuthUtil;
 import com.kimhok.tickets.dto.role.RoleAssignedRequest;
 import com.kimhok.tickets.dto.role.RoleUpdateRequest;
 import com.kimhok.tickets.entity.User;
@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -24,31 +22,25 @@ import java.util.Optional;
 public class UserRoleController {
 
     private final UserRoleService userRoleService;
-
+    private final AuthUtil authUtil;
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/assign-role")
     public ResponseEntity<?> assignRole(
             @RequestBody RoleAssignedRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails adminDetail = (CustomUserDetails) authentication.getPrincipal();
-        User admin = adminDetail.getUser();
 
+        User admin = authUtil.getCurrentUser();
         userRoleService.assignRoleToUser(request.getUserEmail(), request.getRoleName(), Optional.ofNullable(admin));
         return ResponseEntity.ok(Map.of("messages", "Role assigned successfully"));
     }
 
-    @PostMapping("/update-role")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<?>> updateUserRole(@Valid @RequestBody RoleUpdateRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails adminDetails = (CustomUserDetails) authentication.getPrincipal();
-        User admin = adminDetails.getUser();
-
-        userRoleService.updateUserRole(request.getUserEmail(), request.getNewRoleName(), admin);
+    @PutMapping("/update-role/{userId}")
+    public ResponseEntity<ApiResponse<?>> updateUserRole(@PathVariable String userId,@Valid @RequestBody RoleUpdateRequest request) {
+        User admin = authUtil.getCurrentUser();
+        userRoleService.updateUserRole(userId,request.getNewRoleName(), admin);
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Role Update Successfully",
-                Map.of("New Role", request.getNewRoleName(),
-                "User Email", request.getUserEmail()))
-        );
+                Map.of("New Role", request.getNewRoleName()
+        )));
     }
 
     @GetMapping("/role/{email}")
@@ -84,9 +76,7 @@ public class UserRoleController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
+        User user = authUtil.getCurrentUser();
 
         return ResponseEntity.ok(Map.of(
                 "id", user.getId(),

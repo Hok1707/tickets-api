@@ -8,7 +8,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -35,7 +34,7 @@ public class TicketType {
     @JoinColumn(name = "event_id")
     private Event event;
 
-    @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Ticket> tickets;
 
     @CreationTimestamp

@@ -5,46 +5,52 @@ spring:
     password: haki$1120
     driver-class-name: org.postgresql.Driver
     hikari:
-      connection-test-query: SELECT 1
-      validation-timeout: 5000
-      max-lifetime: 600000
-      connection-timeout: 2000
-      initialization-fail-timeout: -1
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000         # 30s
+      max-lifetime: 1740000       # 29m
+      connection-timeout: 20000   # 20s
   jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
       hibernate:
-        ddl-auto: update
-      properties:
-        hibernate:
-          format_sql: true
-          show_sql: true
-          use_sql_comments: true
-
+        format_sql: true
+        show_sql: true
+        use_sql_comments: true
+    open-in-view: true
   main:
-      banner-mode: off
+    banner-mode: off
   jackson:
-      serialization:
-        write_dates_as_timestamps: false
+    serialization:
+      write_dates_as_timestamps: false
 management:
-    endpoints:
-      web:
-        exposure:
-          include:
-            - health
-            - info
-    endpoint:
-      health:
-        show-details: always
-        show-components: always
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
 server:
-    port: 8081
+  port: 8081
 jwt:
-    secret: 4jsadhajkhd734y98qwdkln172ye8eu102askdjkash7
-    expiration: 3600000
-    refresh-expiration: 604800000
+  secret: 4jsadhajkhd734y98qwdkln172ye8eu102askdjkash7
+  expiration: 3600000
+  refresh-expiration: 604800000
 logging:
-    level:
-      com.kimhok.tickets: ERROR
-      org.springframework.security: ERROR
-      io.jsonwebtoken: ERROR
-      org.hibernate.SQL: DEBUG
-      org.hibernate.type.descriptor.sql: TRACE
+  level:
+    com.kimhok.tickets: ERROR
+    org.springframework.security: ERROR
+    io.jsonwebtoken: ERROR
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+aba:
+  merchantId: ec462118
+  merchantKey: cf0bdcdbc014310f64f4b26de90e102e318ca448
+  purchaseUrl: https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase
+  returnUrl: http://localhost:3000/payment/success
+  cancelUrl: http://localhost:3000/payment/cancel

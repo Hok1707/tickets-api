@@ -5,7 +5,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import kh.gov.nbc.bakong_khqr.exception.KHQRException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.nio.file.AccessDeniedException;
 import java.security.SignatureException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -100,24 +107,57 @@ public class GlobalExceptionHandler {
     }
 
     // ⚠️ Bad request
-    @ExceptionHandler({BadRequestException.class, IllegalArgumentException.class})
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex, HttpServletRequest request) {
+    @ExceptionHandler({BadRequestException.class})
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
         return buildError(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage(), request, ex);
     }
 
-    // ⚠️ Conflict
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex, HttpServletRequest request) {
-        return buildError(HttpStatus.CONFLICT, "Conflict", ex.getMessage(), request, ex);
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalRequest(IllegalArgumentException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.BAD_REQUEST, "Illegal Exception", ex.getMessage(), request, ex);
     }
 
     // 📝 Validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-        return buildError(HttpStatus.BAD_REQUEST, "Validation Failed", message, request, ex);
+
+        List<ErrorResponse.FieldValidationError> fieldErrors = new ArrayList<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            fieldErrors.add(ErrorResponse.FieldValidationError.builder()
+                    .field(error.getField())
+                    .message(error.getDefaultMessage())
+                    .rejectedValue(error.getRejectedValue())
+                    .code(error.getCode())
+                    .build());
+        });
+
+        ex.getBindingResult().getGlobalErrors().forEach(error -> {
+            fieldErrors.add(ErrorResponse.FieldValidationError.builder()
+                    .field(error.getObjectName())
+                    .message(error.getDefaultMessage())
+                    .code(error.getCode())
+                    .build());
+        });
+
+        String summaryMessage = fieldErrors.size() + " validation error(s) found";
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Failed")
+                .message(summaryMessage)
+                .path(request.getRequestURI())
+                .traceId(UUID.randomUUID().toString())
+                .fieldErrors(fieldErrors)
+                .build();
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex,HttpServletRequest request){
+        return buildError(HttpStatus.CONFLICT,"Data Conflict", ex.getMessage(),request,ex);
     }
 
     // 💥 Catch-all
@@ -125,4 +165,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "Something went wrong", request, ex);
     }
+
+    @ExceptionHandler(TicketSoldOutException.class)
+    public ResponseEntity<ErrorResponse> handleTicketSoldOutException(TicketSoldOutException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.NOT_FOUND, "Tickets Sold Out", ex.getMessage(), request, ex);
+    }
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex ,HttpServletRequest request){
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR,"No path match API please check",ex.getMessage(),request,ex);
+    }
+
+    @ExceptionHandler(KHQRException.class)
+    public ResponseEntity<ErrorResponse> handleKhQrException(KHQRException ex, HttpServletRequest request){
+        return buildError(HttpStatus.BAD_REQUEST,"Unable to create KHQR",ex.getMessage(),request,ex);
+    }
+
 }

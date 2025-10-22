@@ -3,7 +3,6 @@ package com.kimhok.tickets.service.impl;
 import com.kimhok.tickets.entity.Role;
 import com.kimhok.tickets.entity.User;
 import com.kimhok.tickets.entity.UserRole;
-import com.kimhok.tickets.exception.ConflictException;
 import com.kimhok.tickets.exception.ResourceNotFoundException;
 import com.kimhok.tickets.repository.RoleRepository;
 import com.kimhok.tickets.repository.UserRepository;
@@ -37,25 +36,24 @@ public class UserRoleServiceImpl implements UserRoleService {
         boolean hasRole = user.hasRole(roleName);
 
         if (hasRole) {
-            throw new ConflictException("User already has role: " + roleName);
+            throw new ResourceNotFoundException("User already has role: " + roleName);
         }
 
         UserRole userRole = new UserRole(user, role, assignedBy.orElse(null));
         UserRole savedUserRole = userRoleRepository.save(userRole);
         log.info("User Role has been assigned '{}'",savedUserRole);
-        user.getRole().getName();
         String assignedByInfo = assignedBy.map(User::getEmail).orElse("System");
         log.info("Assigned role '{}' to user '{}' by user '{}'", roleName, userEmail, assignedByInfo);
     }
 
     @Transactional
     @Override
-    public void updateUserRole(String userEmail, String newRoleName, User assignedBy) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
+    public void updateUserRole(String userId, String newRoleName, User assignedBy) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         Role newRole = roleRepository.findRoleByName(newRoleName)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + newRoleName));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + newRoleName));
 
         if (user.hasRole(newRoleName)) {
             throw new IllegalArgumentException("User already has role: " + newRoleName);
@@ -70,11 +68,11 @@ public class UserRoleServiceImpl implements UserRoleService {
             userRole.setRole(newRole);
             userRole.setAssignedBy(assignedBy);
             log.info("Updated user '{}' role from '{}' to '{}' by '{}'",
-                    userEmail, oldRoleName, newRoleName, assignedBy.getEmail());
+                    userId, oldRoleName, newRoleName, assignedBy.getEmail());
         }
 
         userRoleRepository.save(userRole);
-        log.info("Role updated successfully for user: {}", userEmail);
+        log.info("Role updated successfully for user: {}", userId);
     }
 
     @Transactional(readOnly = true)
@@ -101,19 +99,6 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Transactional(readOnly = true)
     public long countUsersByRole(String roleName) {
         return userRepository.countByRoleName(roleName);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public boolean validateUserHasSingleRole(String email) {
-        User user = findByEmail(email);
-        return user.getUserRole() != null;
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public UserRole getUserRoleInfo(String email) {
-        User user = findByEmail(email);
-        return user.getUserRole();
     }
 
     @Transactional(readOnly = true)
