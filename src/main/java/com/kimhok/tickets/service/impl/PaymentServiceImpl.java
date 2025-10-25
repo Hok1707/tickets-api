@@ -16,12 +16,12 @@ import java.util.Calendar;
 public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
-    public IndividualInfo createKhQr(IndividualInfo request) {
+    public IndividualInfo createKhQr(String orderId, IndividualInfo request) {
         IndividualInfo individualInfo = new IndividualInfo();
         individualInfo.setBakongAccountId("heng_kimhok@lolc");
         individualInfo.setAccountInformation("+85589456299");
         individualInfo.setStoreLabel("HokEvent");
-        individualInfo.setCurrency(KHQRCurrency.KHR);
+        individualInfo.setCurrency(KHQRCurrency.valueOf(String.valueOf(request.getCurrency())));
         individualInfo.setAmount(request.getAmount());
         individualInfo.setBillNumber(request.getBillNumber());
         individualInfo.setMerchantName("Heng Kimhok");

@@ -64,28 +64,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req, res, authEx) -> {
-                            res.setStatus(HttpStatus.UNAUTHORIZED.value());
-                            res.setContentType("application/json");
-                            res.getWriter().write("""
-                                    {
-                                      "error": "Unauthorized",
-                                      "message": "%s"
-                                    }
-                                    """.formatted(authEx.getMessage()));
-                        })
-                        .accessDeniedHandler((req, res, accessDeniedEx) -> {
-                            res.setStatus(HttpStatus.FORBIDDEN.value());
-                            res.setContentType("application/json");
-                            res.getWriter().write("""
-                                    {
-                                      "error": "Forbidden",
-                                      "message": "%s"
-                                    }
-                                    """.formatted(accessDeniedEx.getMessage()));
-                        }));
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
     @Bean
