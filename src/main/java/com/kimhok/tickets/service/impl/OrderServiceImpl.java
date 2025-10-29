@@ -3,6 +3,7 @@ package com.kimhok.tickets.service.impl;
 import com.kimhok.tickets.common.utils.AuthUtil;
 import com.kimhok.tickets.common.utils.BillUtil;
 import com.kimhok.tickets.dto.OrderResponse;
+import com.kimhok.tickets.dto.order.UpdateOrderStatusRequest;
 import com.kimhok.tickets.dto.payment.CheckoutRequest;
 import com.kimhok.tickets.dto.payment.CheckoutResponse;
 import com.kimhok.tickets.entity.Order;
@@ -94,5 +95,15 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderMapper.toOrderResponse(order);
+    }
+
+    @Transactional
+    @Override
+    public String updateOrderStatus(String orderId, UpdateOrderStatusRequest request) {
+        Order order = orderRepository.findById(orderId).orElseThrow(()-> new ResourceNotFoundException("Order Not Found"));
+        order.setStatus(request.getStatus());
+        order.setMd5Hash(request.getMd5Hash());
+        orderRepository.save(order);
+        return "Order paid successfully";
     }
 }

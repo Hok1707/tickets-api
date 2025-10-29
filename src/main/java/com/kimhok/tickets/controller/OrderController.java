@@ -2,6 +2,7 @@ package com.kimhok.tickets.controller;
 
 import com.kimhok.tickets.common.utils.ApiResponse;
 import com.kimhok.tickets.dto.OrderResponse;
+import com.kimhok.tickets.dto.order.UpdateOrderStatusRequest;
 import com.kimhok.tickets.dto.payment.CheckoutRequest;
 import com.kimhok.tickets.dto.payment.CheckoutResponse;
 import com.kimhok.tickets.service.OrderService;
@@ -40,5 +41,12 @@ public class OrderController {
         log.info("Enquiry order By Id");
         var response = orderService.findOrderById(orderId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Enquiry Order Successfully", response));
+    }
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<String> updateOrderStatus(@PathVariable String orderId, @RequestBody UpdateOrderStatusRequest request){
+        log.info("Update order status {} ",orderId);
+        orderService.updateOrderStatus(orderId,request);
+        return ResponseEntity.status(HttpStatus.OK).body("Order Paid Success");
     }
 }

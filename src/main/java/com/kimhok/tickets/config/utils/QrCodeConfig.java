@@ -1,4 +1,4 @@
-package com.kimhok.tickets.config;
+package com.kimhok.tickets.config.utils;
 
 import com.google.zxing.qrcode.QRCodeWriter;
 import org.springframework.context.annotation.Bean;

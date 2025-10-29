@@ -48,9 +48,6 @@ logging:
     io.jsonwebtoken: ERROR
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
-aba:
-  merchantId: ec462118
-  merchantKey: cf0bdcdbc014310f64f4b26de90e102e318ca448
-  purchaseUrl: https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase
-  returnUrl: http://localhost:3000/payment/success
-  cancelUrl: http://localhost:3000/payment/cancel
+bakong:
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiMzFlYTI0NGUwYmUzNGYwMyJ9LCJpYXQiOjE3NjE0MDgwMDgsImV4cCI6MTc2OTE4NDAwOH0.NdBkPHick1Y4ehZYhqcaEJMFIJrmSwBm-iiWamBFsbs
+  base-uri: https://api-bakong.nbc.gov.kh/v1

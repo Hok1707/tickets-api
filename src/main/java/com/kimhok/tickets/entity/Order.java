@@ -46,6 +46,8 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
+    @Column(name = "md5_hash")
+    private String md5Hash;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

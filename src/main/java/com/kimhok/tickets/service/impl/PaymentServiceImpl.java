@@ -1,19 +1,34 @@
 package com.kimhok.tickets.service.impl;
 
+import com.kimhok.tickets.dto.payment.BakongTransactionResponse;
 import com.kimhok.tickets.service.PaymentService;
 import kh.gov.nbc.bakong_khqr.model.IndividualInfo;
 import kh.gov.nbc.bakong_khqr.model.KHQRCurrency;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.Calendar;
+import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
+
+    private final WebClient webClient;
+
+    @Value("${bakong.token}")
+    private String bakongToken;
+    @Value("${bakong.base-uri}")
+    private String bakongURI;
+    private static final String CHECK_MD5 = "/check_transaction_by_md5";
     @Override
     @Transactional
     public IndividualInfo createKhQr(String orderId, IndividualInfo request) {
@@ -32,4 +47,28 @@ public class PaymentServiceImpl implements PaymentService {
         return individualInfo;
     }
 
+    @Override
+    public Mono<BakongTransactionResponse> checkTransactionStatus(String md5) {
+        return webClient.post()
+                .uri(bakongURI + CHECK_MD5)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + bakongToken)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .bodyValue(Map.of("md5", md5))
+                .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        client -> client.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(new RuntimeException("Bakong API error: " + body)))
+                )
+                .bodyToMono(BakongTransactionResponse.class)
+                .map(resp -> {
+                    if (resp.getResponseCode() != 0) {
+                        throw new RuntimeException("Transaction check failed or not found: "
+                                + resp.getResponseMessage());
+                    }
+                    return resp;
+                })
+                .doOnNext(r -> log.debug("Bakong status for md5={} → {}", md5, r))
+                .doOnError(err -> log.error("Error checking Bakong tx for md5={}", md5, err));
+    }
 }
