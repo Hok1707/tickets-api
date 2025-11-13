@@ -28,8 +28,8 @@ public class CheckoutResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OrderItemResponse {
-        private String eventName;
-        private String ticketName;
+        private String eventId;
+        private String ticketTypeId;
         private int quantity;
         private BigDecimal unitPrice;
         private BigDecimal totalPrice;

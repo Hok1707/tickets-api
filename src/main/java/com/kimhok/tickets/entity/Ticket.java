@@ -20,7 +20,7 @@ import java.util.Objects;
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false,updatable = false)
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -33,12 +33,13 @@ public class Ticket {
     @JoinColumn(name = "purchaser_id")
     private User purchaser;
 
-    @OneToMany(mappedBy = "ticket",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TicketValidation> validations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "ticket",cascade = CascadeType.ALL)
-    private List<QrCode> qrCodes = new ArrayList<>();
-
+    @OneToOne(mappedBy = "ticket" , cascade = CascadeType.ALL)
+    private QrCode qrCode;
+    @OneToOne(mappedBy = "ticket",cascade = CascadeType.ALL)
+    private Payment payment;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -56,5 +57,10 @@ public class Ticket {
     @Override
     public int hashCode() {
         return Objects.hash(id, status, createdAt, updatedAt);
+    }
+
+    public void setQRCode(QrCode qrCode){
+        this.qrCode = qrCode;
+        qrCode.setTicket(this);
     }
 }

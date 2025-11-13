@@ -1,6 +1,7 @@
 package com.kimhok.tickets.service.impl;
 
 import com.kimhok.tickets.dto.payment.BakongTransactionResponse;
+import com.kimhok.tickets.exception.ResourceNotFoundException;
 import com.kimhok.tickets.service.PaymentService;
 import kh.gov.nbc.bakong_khqr.model.IndividualInfo;
 import kh.gov.nbc.bakong_khqr.model.KHQRCurrency;
@@ -29,6 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${bakong.base-uri}")
     private String bakongURI;
     private static final String CHECK_MD5 = "/check_transaction_by_md5";
+
     @Override
     @Transactional
     public IndividualInfo createKhQr(String orderId, IndividualInfo request) {
@@ -41,7 +43,7 @@ public class PaymentServiceImpl implements PaymentService {
         individualInfo.setBillNumber(request.getBillNumber());
         individualInfo.setMerchantName("Heng Kimhok");
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MINUTE, 5);
+        calendar.add(Calendar.MINUTE, 2);
         long expirationTimestamp = calendar.getTimeInMillis();
         individualInfo.setExpirationTimestamp(expirationTimestamp);
         return individualInfo;
@@ -57,18 +59,26 @@ public class PaymentServiceImpl implements PaymentService {
                 .retrieve()
                 .onStatus(
                         status -> status.is4xxClientError() || status.is5xxServerError(),
-                        client -> client.bodyToMono(String.class)
-                                .flatMap(body -> Mono.error(new RuntimeException("Bakong API error: " + body)))
+                        clientResponse -> clientResponse.bodyToMono(String.class)
+                                .flatMap(body -> Mono.error(new RuntimeException("Bakong API HTTP error: " + body)))
                 )
                 .bodyToMono(BakongTransactionResponse.class)
                 .map(resp -> {
-                    if (resp.getResponseCode() != 0) {
-                        throw new RuntimeException("Transaction check failed or not found: "
-                                + resp.getResponseMessage());
+                    log.info("Bakong response for md5 {} → code={}, msg={}", md5, resp.getResponseCode(), resp.getResponseMessage());
+                    if (resp.getResponseCode() == 0) {
+                        resp.setStatus("SUCCESS");
+                    } else if (resp.getResponseCode() == 1) {
+                        resp.setStatus("PENDING");
+                    } else if (resp.getErrorCode() == 3) {
+                        resp.setStatus("FAILED");
+                    } else {
+                        resp.setStatus("UNKNOWN");
                     }
+
                     return resp;
                 })
-                .doOnNext(r -> log.debug("Bakong status for md5={} → {}", md5, r))
+                .doOnNext(r -> log.debug("Bakong status for md5={} → {}", md5, r.getStatus()))
                 .doOnError(err -> log.error("Error checking Bakong tx for md5={}", md5, err));
     }
+
 }

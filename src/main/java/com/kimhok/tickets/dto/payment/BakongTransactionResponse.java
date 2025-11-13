@@ -1,12 +1,16 @@
 package com.kimhok.tickets.dto.payment;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class BakongTransactionResponse {
     private String responseMessage;
-    private int responseCode;
+    private Integer responseCode;
     private TransactionData data;
+    private String status;
+    private Integer errorCode;
 
     @Data
     public static class TransactionData {

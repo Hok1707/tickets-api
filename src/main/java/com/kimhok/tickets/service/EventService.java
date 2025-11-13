@@ -9,12 +9,19 @@ import java.util.Optional;
 
 public interface EventService {
     EventDto createEvent(CreateEventRequest request);
+
     Optional<EventDto> getEventForOrganizer(String id);
+
     PagedResponse<EventDto> getAllEvent(int page, int size, String sortBy, String direction);
-    PagedResponse<EventDto> getAllEventByOrganizer(int page,int size,String sortBy,String direction);
+
+    PagedResponse<EventDto> getAllEventByOrganizer(int page, int size, String sortBy, String direction);
+
     EventDto getEventById(String eventId);
+
     void deleteEventById(String eventId);
+
     EventDto updateEvent(String eventId, UpdateEventRequest request);
-    PagedResponse<EventDto> getPublishedEvents(String status,int page, int size, String sortBy, String direction);
+
+    PagedResponse<EventDto> getPublishedEvents(String status, int page, int size, String sortBy, String direction);
 
 }

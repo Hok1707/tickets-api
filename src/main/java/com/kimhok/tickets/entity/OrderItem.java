@@ -17,9 +17,9 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     @Column(nullable = false)
-    private String eventName;
+    private String eventId;
     @Column(nullable = false)
-    private String ticketName;
+    private String ticketType;
     @Column(nullable = false)
     private int quantity;
     @Column(nullable = false, precision = 10, scale = 2)

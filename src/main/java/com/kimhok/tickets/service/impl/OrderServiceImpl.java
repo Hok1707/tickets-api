@@ -54,12 +54,12 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> items = request.getItems().stream().map(i -> {
             var event = eventRepository.findById(i.getEventId())
                     .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
-            var ticket = ticketTypeRepository.findById(i.getTicketTypeId())
+            var ticket = ticketTypeRepository.findByIdWithLock(i.getTicketTypeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Ticket type not found"));
 
             return OrderItem.builder()
-                    .eventName(event.getName())
-                    .ticketName(ticket.getName())
+                    .eventId(event.getId())
+                    .ticketType(ticket.getId())
                     .unitPrice(BigDecimal.valueOf(ticket.getPrice()))
                     .quantity(i.getQuantity())
                     .order(order)
@@ -82,12 +82,13 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(order);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public OrderResponse findOrderById(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(
-                ()-> new ResourceNotFoundException("Order Id not found! "+orderId)
+                () -> new ResourceNotFoundException("Order Id not found! " + orderId)
         );
-        if (order != null ) {
+        if (order != null) {
             String purchaser = order.getUser().getId();
             String currentUser = authUtil.getCurrentUserId();
             if (!currentUser.equals(purchaser)) {
@@ -99,11 +100,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public String updateOrderStatus(String orderId, UpdateOrderStatusRequest request) {
-        Order order = orderRepository.findById(orderId).orElseThrow(()-> new ResourceNotFoundException("Order Not Found"));
+    public void updateOrderStatus(String orderId, UpdateOrderStatusRequest request) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order Not Found"));
         order.setStatus(request.getStatus());
         order.setMd5Hash(request.getMd5Hash());
         orderRepository.save(order);
-        return "Order paid successfully";
     }
 }

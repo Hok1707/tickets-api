@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
 
-    @Mapping(target = "status",expression = "java(order.getStatus().name())")
+    @Mapping(target = "status", expression = "java(order.getStatus().name())")
     @Mapping(target = "userId", source = "user.id")
     OrderResponse toOrderResponse(Order order);
 
@@ -23,8 +23,11 @@ public interface OrderMapper {
     @Mapping(target = "subtotal", source = "subtotal")
     @Mapping(target = "transactionFee", source = "transactionFee")
     CheckoutResponse toResponse(Order order);
+
     @Mapping(target = "totalPrice", expression = "java(calcTotal(item))")
+    @Mapping(source = "ticketType", target = "ticketTypeId")
     CheckoutResponse.OrderItemResponse toItemResponse(OrderItem item);
+
     default BigDecimal calcTotal(OrderItem i) {
         return i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity()));
     }

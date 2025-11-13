@@ -20,6 +20,4 @@ public class OrderItemRequest {
     private int quantity;
     @NotNull(message = "Price is required")
     private double price;
-    private String eventName;
-    private String ticketName;
 }

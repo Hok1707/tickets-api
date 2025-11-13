@@ -19,16 +19,16 @@ import java.util.UUID;
 @Table(name = "qr_code")
 public class QrCode {
     @Id
-    @Column(name = "id", nullable = false,updatable = false)
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private QrCodeStatus status;
-    @Column(name = "value",nullable = false,columnDefinition = "TEXT")
+    @Column(name = "value", nullable = false, columnDefinition = "TEXT")
     private String value;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id")
+    @OneToOne
+    @JoinColumn(name = "ticket_id", unique = true)
     private Ticket ticket;
 
     @CreationTimestamp

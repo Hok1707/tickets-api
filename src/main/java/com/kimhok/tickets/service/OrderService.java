@@ -8,6 +8,6 @@ import com.kimhok.tickets.dto.payment.CheckoutResponse;
 public interface OrderService {
     CheckoutResponse checkout(CheckoutRequest request);
     OrderResponse findOrderById(String orderId);
-    String updateOrderStatus(String orderId, UpdateOrderStatusRequest request);
+    void updateOrderStatus(String orderId, UpdateOrderStatusRequest request);
 
 }
