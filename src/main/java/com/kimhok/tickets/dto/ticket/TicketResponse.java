@@ -12,6 +12,8 @@ public class TicketResponse {
     private TicketStatus status;
     private String ticketTypeId;
     private String eventId;
+    private String ticketName;
+    private String eventName;
     private PurchaserResponse purchaser;
     private QrCodeResponse qrCode;
     private LocalDateTime createdAt;

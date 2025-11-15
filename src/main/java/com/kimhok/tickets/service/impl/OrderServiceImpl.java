@@ -2,8 +2,11 @@ package com.kimhok.tickets.service.impl;
 
 import com.kimhok.tickets.common.utils.AuthUtil;
 import com.kimhok.tickets.common.utils.BillUtil;
+import com.kimhok.tickets.common.utils.PagedResponse;
 import com.kimhok.tickets.dto.OrderResponse;
+import com.kimhok.tickets.dto.order.OrderDashboardResponse;
 import com.kimhok.tickets.dto.order.UpdateOrderStatusRequest;
+import com.kimhok.tickets.dto.order.UpdateStatusRequest;
 import com.kimhok.tickets.dto.payment.CheckoutRequest;
 import com.kimhok.tickets.dto.payment.CheckoutResponse;
 import com.kimhok.tickets.entity.Order;
@@ -18,6 +21,10 @@ import com.kimhok.tickets.repository.UserRepository;
 import com.kimhok.tickets.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,4 +114,48 @@ public class OrderServiceImpl implements OrderService {
         order.setMd5Hash(request.getMd5Hash());
         orderRepository.save(order);
     }
+
+    @Override
+    public PagedResponse<OrderResponse> getAllOrder(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+        List<OrderResponse> items = orderMapper.toListOrderResponse(orderPage.getContent());
+        return new PagedResponse<>(
+                items,
+                orderPage.getNumber(),
+                orderPage.getTotalPages(),
+                orderPage.getTotalElements(),
+                orderPage.getSize()
+        );
+
+
+    }
+
+    @Transactional
+    @Override
+    public void updateStatus(String orderId, UpdateStatusRequest request) {
+        var order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new ResourceNotFoundException("This orderId not found "+orderId));
+        order.setStatus(request.getStatus());
+        log.info("This order update status to {}",order.getStatus());
+        orderRepository.save(order);
+    }
+
+    @Override
+    public OrderDashboardResponse getOrderFinancial() {
+
+        BigDecimal subtotal = orderRepository.getTotalSubtotal();
+        BigDecimal fee = orderRepository.getTotalTransactionFee();
+        BigDecimal income = orderRepository.getTotalIncome();
+
+        return OrderDashboardResponse.builder()
+                .netProfit(income != null ? income : BigDecimal.valueOf(0))
+                .totalIncome(subtotal != null ? subtotal : BigDecimal.valueOf(0))
+                .transactionFee(fee != null ? fee : BigDecimal.valueOf(0))
+                .build();
+    }
+
 }

@@ -7,6 +7,7 @@ import com.kimhok.tickets.entity.OrderItem;
 import org.mapstruct.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
@@ -14,6 +15,8 @@ public interface OrderMapper {
     @Mapping(target = "status", expression = "java(order.getStatus().name())")
     @Mapping(target = "userId", source = "user.id")
     OrderResponse toOrderResponse(Order order);
+
+    List<OrderResponse> toListOrderResponse(List<Order> orders);
 
     @Mapping(target = "orderId", source = "id")
     @Mapping(target = "userId", source = "user.id")

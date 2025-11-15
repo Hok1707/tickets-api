@@ -1,6 +1,5 @@
 package com.kimhok.tickets.mapper;
 
-import com.kimhok.tickets.dto.ticket.TicketRequest;
 import com.kimhok.tickets.dto.ticket.TicketResponse;
 import com.kimhok.tickets.dto.ticket.TicketUpdateRequest;
 import com.kimhok.tickets.dto.ticket.TicketUserResponse;
@@ -14,16 +13,9 @@ public interface TicketMapper {
     @Mapping(source = "purchaser", target = "purchaser")
     @Mapping(source = "ticketType.id", target = "ticketTypeId")
     @Mapping(source = "ticketType.event.id", target = "eventId")
+    @Mapping(source = "ticketType.name",target = "ticketName")
+    @Mapping(source = "ticketType.event.name" , target = "eventName")
     TicketResponse toResponse(Ticket entity);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "purchaser.id", ignore = true)
-    @Mapping(target = "payment", ignore = true)
-    @Mapping(target = "validations", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "status", constant = "PURCHASED")
-    Ticket toEntity(TicketRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mappings({
