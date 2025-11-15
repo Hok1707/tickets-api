@@ -1,18 +1,17 @@
 spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 2
-      idle-timeout: 30000
-      max-lifetime: 1740000
-      connection-timeout: 20000
+  url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+  username: ${DB_USER}
+  password: ${DB_PASSWORD}}
+  driver-class-name: org.postgresql.Driver
+  hikari:
+    maximum-pool-size: 20
+    minimum-idle: 2
+    idle-timeout: 30000
+    max-lifetime: 1740000
+    connection-timeout: 20000
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -25,6 +24,17 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 3600000
   refresh-expiration: 604800000
+
+logging:
+  level:
+    com.kimhok.tickets: ERROR
+    org.springframework.security: ERROR
+    io.jsonwebtoken: ERROR
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql: TRACE
+bakong:
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiMzFlYTI0NGUwYmUzNGYwMyJ9LCJpYXQiOjE3NjE0MDgwMDgsImV4cCI6MTc2OTE4NDAwOH0.NdBkPHick1Y4ehZYhqcaEJMFIJrmSwBm-iiWamBFsbs
+  base-uri: https://api-bakong.nbc.gov.kh/v1
 
 server:
   port: 8080

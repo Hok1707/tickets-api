@@ -19,7 +19,7 @@ import java.util.Objects;
 public class TicketType {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false,updatable = false)
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
     @Column(nullable = false)
     private String name;
@@ -30,11 +30,11 @@ public class TicketType {
     @Column(name = "total_available")
     private Integer totalAvailable;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "event_id")
     private Event event;
 
-    @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Ticket> tickets;
 
     @CreationTimestamp
