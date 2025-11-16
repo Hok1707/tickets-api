@@ -13,7 +13,7 @@ import java.util.List;
 public interface TicketRepository extends JpaRepository<Ticket, String> {
     List<Ticket> findByPurchaser_Id(String userId);
 
-    @EntityGraph(attributePaths = {"purchaser", "ticketType", "ticketType.event", "event"})
+    @EntityGraph(attributePaths = {"purchaser", "ticketType", "ticketType.event"})
     Page<Ticket> findAllBy(Pageable pageable);
 
     int countByTicketTypeId(String ticketTypeId);

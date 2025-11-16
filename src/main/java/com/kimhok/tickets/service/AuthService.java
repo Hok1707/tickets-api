@@ -10,4 +10,7 @@ public interface AuthService {
     RefreshTokenResponseDTO refreshToken(String refreshToken);
     void changePassword(ChangePasswordRequestDTO request);
 
+    void forgotPassword(ForgotPasswordRequest request);
+    void resetPassword(ResetPasswordRequest request);
+
 }

@@ -3,6 +3,7 @@ package com.kimhok.tickets.service.impl;
 import com.kimhok.tickets.common.enums.UserStatus;
 import com.kimhok.tickets.config.security.CustomUserDetails;
 import com.kimhok.tickets.config.security.JwtService;
+import com.kimhok.tickets.config.utils.EmailService;
 import com.kimhok.tickets.dto.auth.*;
 import com.kimhok.tickets.entity.RefreshToken;
 import com.kimhok.tickets.entity.Role;
@@ -18,6 +19,7 @@ import com.kimhok.tickets.repository.UserRoleRepository;
 import com.kimhok.tickets.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -43,7 +46,11 @@ public class AuthServiceImpl implements AuthService {
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+
+    private final EmailService emailService;
     private static final String DEFAULT_ROLE = "USER";
+    @Value("${frontend.uri}")
+    private String frontendUrl;
 
     @Transactional
     @Override
@@ -164,5 +171,37 @@ public class AuthServiceImpl implements AuthService {
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+        log.info("===== forgot password requested by {} =====", request.getEmail());
+        Optional<User> isExisting = Optional.ofNullable(userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("This email not found please use correct email " + request.getEmail())));
+
+        User user = isExisting.get();
+        String token = UUID.randomUUID().toString();
+        user.setResetToken(token);
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+        String resetUrl = frontendUrl + "/reset-password?token=" + token;
+        emailService.sendResetPasswordEmail(user.getEmail(), resetUrl);
+        log.info("===== Email is sending to {} ===== ", user.getEmail());
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        log.info("===== reset password processing =====");
+        User user = userRepository.findByResetToken(request.getToken())
+                .orElseThrow(()->new ResourceNotFoundException("this token not found!"));
+        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())){
+            throw new ResourceNotFoundException("This token was expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+        log.info("===== user was reset password success =====");
     }
 }
