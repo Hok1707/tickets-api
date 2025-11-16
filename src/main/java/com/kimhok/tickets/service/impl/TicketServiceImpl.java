@@ -148,11 +148,12 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public PagedResponse<TicketResponse> getAllTicket(int page, int size, String sortBy, String direction) {
+        log.info("======= Get all tickets page {} & size {} ======= ", page, size);
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Ticket> ticketPage = ticketRepository.findAll(pageable);
+        Page<Ticket> ticketPage = ticketRepository.findAllBy(pageable);
         List<TicketResponse> items = ticketMapper.toListResponse(ticketPage.getContent());
         return new PagedResponse<>(
                 items,

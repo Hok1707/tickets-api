@@ -81,8 +81,7 @@ public class EventServiceImpl implements EventService {
                 : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Event> eventsPage = eventRepository.findAll(pageable);
-
+        Page<Event> eventsPage = eventRepository.findAllBy(pageable);
         List<EventDto> items = eventsPage.map(eventMapper::toDto).getContent();
 
         return new PagedResponse<>(

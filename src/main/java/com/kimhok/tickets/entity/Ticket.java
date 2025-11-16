@@ -35,10 +35,9 @@ public class Ticket {
 
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TicketValidation> validations = new ArrayList<>();
-
-    @OneToOne(mappedBy = "ticket" , cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL)
     private QrCode qrCode;
-    @OneToOne(mappedBy = "ticket",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL)
     private Payment payment;
     @CreationTimestamp
     @Column(updatable = false)
@@ -59,7 +58,7 @@ public class Ticket {
         return Objects.hash(id, status, createdAt, updatedAt);
     }
 
-    public void setQRCode(QrCode qrCode){
+    public void setQRCode(QrCode qrCode) {
         this.qrCode = qrCode;
         qrCode.setTicket(this);
     }
