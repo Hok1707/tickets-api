@@ -37,3 +37,5 @@ build/
 # macOS system files
 .DS_Store
 .mvn/wrapper
+
+src/main/resources/application-dev.yml
