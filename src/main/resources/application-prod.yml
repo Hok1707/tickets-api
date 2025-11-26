@@ -11,7 +11,7 @@ spring:
     connection-timeout: 20000
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -40,8 +40,8 @@ logging:
     org.hibernate.SQL: ERROR
     org.hibernate.type.descriptor.sql: TRACE
 bakong:
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoiMzFlYTI0NGUwYmUzNGYwMyJ9LCJpYXQiOjE3NjE0MDgwMDgsImV4cCI6MTc2OTE4NDAwOH0.NdBkPHick1Y4ehZYhqcaEJMFIJrmSwBm-iiWamBFsbs
-  base-uri: https://api-bakong.nbc.gov.kh/v1
+  token: ${BAKONG_TOKEN}
+  base-uri: ${BAKONG_BASE_URI}
 
 server:
   port: 8080
