@@ -2,6 +2,7 @@ package com.kimhok.tickets.repository;
 
 import com.kimhok.tickets.common.enums.EventStatus;
 import com.kimhok.tickets.entity.Event;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -20,6 +21,9 @@ public interface EventRepository extends JpaRepository<Event, String> {
     Page<Event> findByOrganizerId(String organizerId, Pageable pageable);
     @EntityGraph(attributePaths = {"ticketTypes"})
     Page<Event> findByStatus(EventStatus status, Pageable pageable);
+    @NotNull
+    @EntityGraph(attributePaths = {"ticketTypes"})
+    Optional<Event> findById(@NotNull String id);
     Optional<Event> findByIdAndOrganizerId(String id,String organizerId);
     @Query("SELECT e FROM Event e JOIN FETCH e.organizer WHERE e.id = :id")
     Optional<Event> findByIdWithOrganizer(@Param("id") String id);
