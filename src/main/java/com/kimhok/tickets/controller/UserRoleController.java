@@ -86,15 +86,4 @@ public class UserRoleController {
                 "role", user.getRoleName() != null ? user.getRoleName() : "No role assigned"
         ));
     }
-
-    @GetMapping("/debug-role/{email}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> debugUserRole(@PathVariable String email) {
-        try {
-            String debug = userRoleService.debugUserRole(email);
-            return ResponseEntity.ok(Map.of("debug", debug));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
 }

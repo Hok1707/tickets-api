@@ -55,9 +55,19 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth ->
                         auth
+                                .requestMatchers(
+                                        "/docs", "/docs/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui/index.html",
+                                        "/v3/api-docs",
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml",
+                                        "/openapi.yaml",
+                                        "/openapi.json"
+                                ).permitAll()
                                 .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/api/v1/payments/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/events/published/**").permitAll()
                                 .anyRequest().authenticated()
                 )
@@ -66,10 +76,11 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000","http://localhost","http://localhost:80","http://157.10.73.192"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost", "http://localhost:80", "http://157.10.73.192"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);

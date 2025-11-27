@@ -41,7 +41,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 
         UserRole userRole = new UserRole(user, role, assignedBy.orElse(null));
         UserRole savedUserRole = userRoleRepository.save(userRole);
-        log.info("User Role has been assigned '{}'",savedUserRole);
+        log.info("User Role has been assigned '{}'", savedUserRole);
         String assignedByInfo = assignedBy.map(User::getEmail).orElse("System");
         log.info("Assigned role '{}' to user '{}' by user '{}'", roleName, userEmail, assignedByInfo);
     }
@@ -99,24 +99,5 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Transactional(readOnly = true)
     public long countUsersByRole(String roleName) {
         return userRepository.countByRoleName(roleName);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public String debugUserRole(String email) {
-            User user = userRepository.findByEmailWithRole(email)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-            StringBuilder debug = new StringBuilder();
-            debug.append("User: ").append(user.getEmail()).append("\n");
-            debug.append("UserRole object: ").append(user.getUserRole() != null ? "Present" : "NULL").append("\n");
-
-            if (user.getUserRole() != null) {
-                debug.append("Role object: ").append(user.getUserRole().getRole() != null ? "Present" : "NULL").append("\n");
-                if (user.getUserRole().getRole() != null) {
-                    debug.append("Role name: ").append(user.getUserRole().getRole().getName()).append("\n");
-                }
-            }
-            return debug.toString();
     }
 }

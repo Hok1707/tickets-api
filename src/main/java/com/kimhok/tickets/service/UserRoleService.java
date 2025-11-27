@@ -12,6 +12,4 @@ public interface UserRoleService {
     String getUserRole(String email);
     List<User> getUsersByRole(String roleName);
     long countUsersByRole(String roleName);
-    String debugUserRole(String email);
-
 }

@@ -61,3 +61,8 @@ bakong:
   base-uri: ${BAKONG_BASE_URI}
 frontend:
   uri: ${FRONTEND_URI}
+springdoc:
+  swagger-ui:
+    path: /docs
+  api-docs:
+    path: /v3/api-docs
