@@ -21,8 +21,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.ott.InvalidOneTimeTokenException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -68,12 +70,18 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setStatus(UserStatus.ACTIVE);
+        user.setStatus(UserStatus.BLOCKED);
+        String verifyToken = UUID.randomUUID().toString();
+        user.setEmailVerifyToken(verifyToken);
+        user.setEmailVerifyExpired(LocalDateTime.now().plusMinutes(5));
         User savedUser = userRepository.save(user);
         log.info("Created new user with ID: {}", savedUser.getId());
         assignDefaultRole(savedUser);
+        log.info("===== send email to verify =======");
+        String verifyLink = frontendUrl + "/verify-email?token=" + verifyToken;
+        emailService.sendEmailVerify(request.getEmail(), verifyLink);
         return RegisterResponseDTO.builder()
-                .message("Register Successfully")
+                .message("Please verify your email to activate")
                 .email(request.getEmail())
                 .build();
     }
@@ -86,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("Default role not found. Please ensure '" + DEFAULT_ROLE + "' role exists in the database.");
         }
 
-        UserRole userRole = new UserRole(user, defaultRole.get(), user); // Self-assigned
+        UserRole userRole = new UserRole(user, defaultRole.get(), user);
         user.setUserRole(userRole);
         userRoleRepository.save(userRole);
 
@@ -107,6 +115,10 @@ public class AuthServiceImpl implements AuthService {
         );
 
         var userDetails = (CustomUserDetails) authentication.getPrincipal();
+        if (userDetails.getUser().getStatus() != UserStatus.ACTIVE) {
+            throw new AuthenticationServiceException("Please Verify Email To Active");
+        }
+
         var jwtToken = jwtService.generateToken(userDetails);
 
         Optional<RefreshToken> isExistingRefresh = refreshTokenRepository.findByUser(userDetails.getUser());
@@ -179,22 +191,24 @@ public class AuthServiceImpl implements AuthService {
         Optional<User> isExisting = Optional.ofNullable(userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("This email not found please use correct email " + request.getEmail())));
 
-        User user = isExisting.get();
-        String token = UUID.randomUUID().toString();
-        user.setResetToken(token);
-        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(15));
-        userRepository.save(user);
-        String resetUrl = frontendUrl + "/reset-password?token=" + token;
-        emailService.sendResetPasswordEmail(user.getEmail(), resetUrl);
-        log.info("===== Email is sending to {} ===== ", user.getEmail());
+        if (isExisting.isPresent()) {
+            var user = isExisting.get();
+            String token = UUID.randomUUID().toString();
+            user.setResetToken(token);
+            user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(15));
+            userRepository.save(user);
+            String resetUrl = frontendUrl + "/reset-password?token=" + token;
+            emailService.sendResetPasswordEmail(user.getEmail(), resetUrl);
+            log.info("===== Email is sending to {} ===== ", user.getEmail());
+        }
     }
 
     @Override
     public void resetPassword(ResetPasswordRequest request) {
         log.info("===== reset password processing =====");
-        User user = userRepository.findByResetToken(request.getToken())
-                .orElseThrow(()->new ResourceNotFoundException("this token not found!"));
-        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())){
+        var user = userRepository.findByResetToken(request.getToken())
+                .orElseThrow(() -> new ResourceNotFoundException("this token not found!"));
+        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new ResourceNotFoundException("This token was expired");
         }
 
@@ -203,5 +217,20 @@ public class AuthServiceImpl implements AuthService {
         user.setResetTokenExpiry(null);
         userRepository.save(user);
         log.info("===== user was reset password success =====");
+    }
+
+    @Override
+    public void verifyEmail(VerifyEmailRequest request) {
+        log.info("==== Verify email to activate account!");
+        var user = userRepository.findByEmailVerifyToken(request.verifyToken())
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found!"));
+        if (user.getEmailVerifyExpired().isBefore(LocalDateTime.now())) {
+            throw new InvalidOneTimeTokenException("Invalid or Expired token!");
+        }
+        user.setStatus(UserStatus.ACTIVE);
+        user.setEmailVerifyToken(null);
+        user.setEmailVerifyExpired(null);
+        userRepository.save(user);
+
     }
 }

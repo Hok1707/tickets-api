@@ -2,9 +2,12 @@ package com.kimhok.tickets.service.impl;
 
 import com.google.zxing.WriterException;
 import com.kimhok.tickets.common.enums.QrCodeStatus;
+import com.kimhok.tickets.common.enums.TicketMethod;
 import com.kimhok.tickets.common.enums.TicketStatus;
+import com.kimhok.tickets.common.enums.TicketValidationStatus;
 import com.kimhok.tickets.common.utils.PagedResponse;
 import com.kimhok.tickets.common.utils.QrCodeGenerator;
+import com.kimhok.tickets.dto.qrCode.QrValueRequest;
 import com.kimhok.tickets.dto.ticket.TicketRequest;
 import com.kimhok.tickets.dto.ticket.TicketResponse;
 import com.kimhok.tickets.dto.ticket.TicketUpdateRequest;
@@ -12,15 +15,13 @@ import com.kimhok.tickets.dto.ticket.TicketUserResponse;
 import com.kimhok.tickets.entity.QrCode;
 import com.kimhok.tickets.entity.Ticket;
 import com.kimhok.tickets.entity.TicketType;
+import com.kimhok.tickets.entity.TicketValidation;
 import com.kimhok.tickets.exception.QrGenerationException;
 import com.kimhok.tickets.exception.ResourceNotFoundException;
 import com.kimhok.tickets.exception.TicketSoldOutException;
 import com.kimhok.tickets.mapper.QrCodeMapper;
 import com.kimhok.tickets.mapper.TicketMapper;
-import com.kimhok.tickets.repository.OrderRepository;
-import com.kimhok.tickets.repository.TicketRepository;
-import com.kimhok.tickets.repository.TicketTypeRepository;
-import com.kimhok.tickets.repository.UserRepository;
+import com.kimhok.tickets.repository.*;
 import com.kimhok.tickets.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +56,7 @@ public class TicketServiceImpl implements TicketService {
     private OrderRepository orderRepository;
     @Autowired
     private QrCodeMapper qrCodeMapper;
+    private final TicketValidationRepository ticketValidationRepository;
 
     @Transactional
     @Override
@@ -86,13 +88,17 @@ public class TicketServiceImpl implements TicketService {
             if (quantity > remaining) {
                 throw new TicketSoldOutException("Only " + remaining + " tickets available for " + ticketType.getName());
             }
-
-            List<Ticket> tickets = new ArrayList<>();
+            var ticketValidations = new ArrayList<TicketValidation>();
+            var tickets = new ArrayList<Ticket>();
             for (int i = 0; i < quantity; i++) {
                 Ticket ticket = new Ticket();
                 ticket.setStatus(TicketStatus.PURCHASED);
                 ticket.setTicketType(ticketType);
                 ticket.setPurchaser(purchaser);
+
+                TicketValidation ticketValidation = new TicketValidation();
+                ticketValidation.setTicket(ticket);
+                ticketValidation.setStatus(TicketValidationStatus.VALID);
 
                 String qrValue = order.getId() + "-" + UUID.randomUUID();
                 try {
@@ -109,7 +115,9 @@ public class TicketServiceImpl implements TicketService {
                 }
 
                 tickets.add(ticket);
+                ticketValidations.add(ticketValidation);
             }
+            List<TicketValidation> savedTicketValidation = ticketValidationRepository.saveAll(ticketValidations);
 
             List<Ticket> savedTickets = ticketRepository.saveAll(tickets);
             ticketType.setTotalAvailable(ticketType.getTotalAvailable() - quantity);
@@ -163,4 +171,5 @@ public class TicketServiceImpl implements TicketService {
                 ticketPage.getSize()
         );
     }
+
 }

@@ -34,29 +34,18 @@ public class User {
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
     private List<Event> organizedEvent = new ArrayList<>();
-    @ManyToMany
-    @JoinTable(
-            name = "user_attending_events",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
-    private List<Event> attendingEvents = new ArrayList<>();
-
-    @ManyToMany
-    @JoinTable(
-            name = "user_staff_events",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
-    private List<Event> staffEvents = new ArrayList<>();
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Order> orders = new ArrayList<>();
 
     @Column(name = "reset_token")
     private String resetToken;
 
     @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
+
+    @Column(name = "email_verify_token")
+    private String emailVerifyToken;
+
+    @Column(name = "email_verify_expired")
+    private LocalDateTime emailVerifyExpired;
 
     @CreationTimestamp
     @Column(updatable = false)

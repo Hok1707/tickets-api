@@ -27,7 +27,7 @@ public class OpenAPIConfig {
                         .description("GitHub Repository")
                         .url("https://github.com/Hok1707/tickets-api"))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local Dev"),
+                        new Server().url("http://localhost:8081").description("Local Dev"),
                         new Server().url("http://157.10.73.192:8080").description("Production")));
     }
 }

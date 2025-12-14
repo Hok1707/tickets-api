@@ -44,12 +44,6 @@ public class Event {
     @JoinColumn(name = "organizer_id")
     private User organizer;
 
-    @ManyToMany(mappedBy = "attendingEvents")
-    private List<User> attendees = new ArrayList<>();
-
-    @ManyToMany(mappedBy = "staffEvents")
-    private List<User> staff = new ArrayList<>();
-
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     List<TicketType> ticketTypes = new ArrayList<>();
 

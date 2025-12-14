@@ -48,6 +48,7 @@ public class Order {
     private List<OrderItem> items;
     @Column(name = "md5_hash")
     private String md5Hash;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

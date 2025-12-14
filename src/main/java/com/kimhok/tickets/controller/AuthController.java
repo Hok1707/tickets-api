@@ -23,14 +23,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<RegisterResponseDTO>> register(@Valid @RequestBody RegisterRequestDTO request) {
         log.info("Auth Controller register Processing...");
         RegisterResponseDTO response = authService.register(request);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Register Successfully",response));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Register Successfully", response));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
         log.info("Auth Controller login Processing...");
         LoginResponseDTO loginResponseDTO = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(),"Login Successfully",loginResponseDTO));
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK.value(), "Login Successfully", loginResponseDTO));
     }
 
     @PostMapping("/refresh-token")
@@ -52,14 +52,20 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody ForgotPasswordRequest request){
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Forgot password processing","Success send link"));
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(HttpStatus.OK.value(), "Forgot password processing", "Success send link"));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.status(HttpStatus.OK).body("Reset Password Success");
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request);
+        return ResponseEntity.status(HttpStatus.OK).body("The email has been verified!");
     }
 }
